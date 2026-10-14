@@ -1,6 +1,8 @@
 # Practical Assignment 4: Backend Technologies
 ## Topic: Create a Node.JS Application Which Serves a Static Website
 
+> 🌐 **Live Web Application URL:** [https://punitmanojbhatarkar.github.io/FSD-assignment-4/](https://punitmanojbhatarkar.github.io/FSD-assignment-4/)
+
 ### 📌 Project Overview
 **Cosmic Explorer** is an interactive, deep-space planetary archive built to demonstrate static web serving and REST API integration using **Node.js**.
 
