@@ -243,9 +243,22 @@ document.addEventListener('DOMContentLoaded', () => {
             loader.style.display = 'flex';
             planetsGrid.innerHTML = '';
 
-            const response = await fetch('/api/planets');
+            // Attempt to fetch from Node.js REST API, fallback to static JSON for GitHub Pages
+            let response = null;
+            try {
+                response = await fetch('/api/planets');
+                if (!response.ok) response = null;
+            } catch (e) {
+                response = null;
+            }
+
+            if (!response) {
+                // Static file fallback (GitHub Pages)
+                response = await fetch('data/planets.json');
+            }
+
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: Failed to reach Node.js server.`);
+                throw new Error(`Failed to load planetary telemetry data.`);
             }
 
             allPlanets = await response.json();
@@ -722,11 +735,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================================
     serverTelemetryBtn.addEventListener('click', async () => {
         serverModal.classList.remove('hidden');
-        serverTelemetryContent.innerHTML = `<p style="grid-column: 1 / -1;">Querying Node.js backend...</p>`;
+        serverTelemetryContent.innerHTML = `<p style="grid-column: 1 / -1;">Querying runtime telemetry...</p>`;
 
         try {
-            const res = await fetch('/api/server-info');
-            const data = await res.json();
+            let res = null;
+            try {
+                res = await fetch('/api/server-info');
+                if (!res.ok) res = null;
+            } catch (e) {
+                res = null;
+            }
+
+            const data = res ? await res.json() : {
+                service: 'Static Cloud CDN & Node.js Architecture',
+                nodeVersion: 'Static Build (Node.js Compatible)',
+                port: 'HTTPS (443)',
+                platform: 'GitHub Pages / Cloudflare Edge CDN',
+                staticRoot: 'public',
+                memoryUsageMB: 'Edge Cached',
+                uptimeSeconds: 'Global Cloud Active'
+            };
 
             serverTelemetryContent.innerHTML = `
                 <div class="telemetry-item">
@@ -734,15 +762,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="spec-value" style="color: var(--accent-blue);">${data.service}</span>
                 </div>
                 <div class="telemetry-item">
-                    <span class="spec-label">Node.js Runtime</span>
+                    <span class="spec-label">Runtime Engine</span>
                     <span class="spec-value" style="color: var(--accent-emerald);">${data.nodeVersion}</span>
                 </div>
                 <div class="telemetry-item">
-                    <span class="spec-label">Server Port</span>
+                    <span class="spec-label">Port / Protocol</span>
                     <span class="spec-value">${data.port}</span>
                 </div>
                 <div class="telemetry-item">
-                    <span class="spec-label">Operating Platform</span>
+                    <span class="spec-label">Host Platform</span>
                     <span class="spec-value">${data.platform}</span>
                 </div>
                 <div class="telemetry-item">
@@ -750,18 +778,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="spec-value">/${data.staticRoot}</span>
                 </div>
                 <div class="telemetry-item">
-                    <span class="spec-label">Heap Memory Usage</span>
-                    <span class="spec-value">${data.memoryUsageMB} MB</span>
+                    <span class="spec-label">Memory / Cache State</span>
+                    <span class="spec-value">${data.memoryUsageMB} ${typeof data.memoryUsageMB === 'number' ? 'MB' : ''}</span>
                 </div>
                 <div class="telemetry-item" style="grid-column: 1 / -1;">
-                    <span class="spec-label">Server Uptime</span>
-                    <span class="spec-value">${data.uptimeSeconds} seconds online</span>
+                    <span class="spec-label">System Availability</span>
+                    <span class="spec-value">${data.uptimeSeconds} ${typeof data.uptimeSeconds === 'number' ? 'seconds online' : ''}</span>
                 </div>
             `;
         } catch (err) {
             serverTelemetryContent.innerHTML = `
                 <p style="grid-column: 1 / -1; color: #ef4444;">
-                    Server is serving static files, but failed to fetch JSON telemetry: ${err.message}
+                    Telemetry error: ${err.message}
                 </p>
             `;
         }
