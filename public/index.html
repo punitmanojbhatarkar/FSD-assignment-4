@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cosmic Explorer - An interactive Solar System planetary database powered by a Node.js static application.">
+    <title>Cosmic Explorer | Solar System Planetary Archive</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Interactive Dynamic Starfield Canvas -->
+    <canvas id="starfield-canvas"></canvas>
+    <div class="nebula-overlay"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand-orbit">
+                    <span class="orbit-center"></span>
+                    <span class="orbit-ring"></span>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">COSMIC EXPLORER</span>
+                    <span class="brand-badge">Node.js Static Application</span>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <button class="nav-btn" id="server-telemetry-btn" title="View Node.js Backend Telemetry">
+                    <span class="status-dot"></span>
+                    <span class="server-status-text">Server: Online</span>
+                </button>
+                <button class="nav-btn" id="audio-toggle-btn" title="Toggle Ambient Cosmic Audio">
+                    <span class="icon">🔊</span>
+                    <span class="audio-label">Ambient Sound</span>
+                </button>
+                <button class="nav-btn highlight" id="compare-modal-open-btn">
+                    <span class="icon">⚖️</span> Compare Worlds
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                <span>DEEP SPACE TELEMETRY ARCHIVE</span>
+            </div>
+            <h1 class="hero-title">
+                Explore the Wonders of <br>
+                <span class="gradient-text">Our Solar System</span>
+            </h1>
+            <p class="hero-subtitle">
+                An interactive planetary atlas served seamlessly through a high-performance Node.js static backend with real-time REST API telemetry.
+            </p>
+
+            <!-- Quick Metrics Banner -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-value">8</span>
+                    <span class="metric-label">Major Planets</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">317</span>
+                    <span class="metric-label">Known Moons</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">4.57B</span>
+                    <span class="metric-label">Years of History</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-value">1 AU</span>
+                    <span class="metric-label">149.6M km to Sun</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Interactive Controls Bar -->
+        <section class="controls-section">
+            <div class="controls-container">
+                <!-- Filter Tabs -->
+                <div class="filter-tabs" id="filter-tabs">
+                    <button class="tab-btn active" data-type="All">All Worlds (8)</button>
+                    <button class="tab-btn" data-type="Terrestrial">Terrestrial (4)</button>
+                    <button class="tab-btn" data-type="Gas Giant">Gas Giants (2)</button>
+                    <button class="tab-btn" data-type="Ice Giant">Ice Giants (2)</button>
+                </div>
+
+                <!-- Search & Sort Controls -->
+                <div class="filter-actions">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="planet-search" placeholder="Search worlds..." autocomplete="off">
+                        <button class="clear-search" id="clear-search-btn" title="Clear search">&times;</button>
+                    </div>
+
+                    <div class="sort-select-wrapper">
+                        <select id="planet-sort" aria-label="Sort Planets">
+                            <option value="distance-asc">Distance: Nearest to Sun</option>
+                            <option value="distance-desc">Distance: Furthest from Sun</option>
+                            <option value="radius-desc">Size: Largest First</option>
+                            <option value="radius-asc">Size: Smallest First</option>
+                            <option value="moons-desc">Moons: Most First</option>
+                        </select>
+                    </div>
+
+                    <div class="view-toggle">
+                        <button class="view-btn active" id="view-grid-btn" title="Grid View">🔲 Grid</button>
+                        <button class="view-btn" id="view-orbit-btn" title="Orbital Scale View">🪐 Orbit Map</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading Spinner -->
+        <div class="loader-container" id="loader">
+            <div class="cosmic-spinner">
+                <div class="inner-circle"></div>
+            </div>
+            <p class="loader-text">Initializing telemetry data from Node.js server...</p>
+        </div>
+
+        <!-- Planets Grid Container -->
+        <section class="planets-grid" id="planets-grid">
+            <!-- Dynamic Cards injected via app.js -->
+        </section>
+
+        <!-- Orbital Distance Scale View (Toggled) -->
+        <section class="orbital-view-container hidden" id="orbital-view">
+            <div class="orbit-header">
+                <h2>Planetary Orbital Scale (from the Sun)</h2>
+                <p>Scroll horizontally to examine planetary orbital progression measured in Astronomical Units (AU)</p>
+            </div>
+            <div class="orbit-track" id="orbit-track">
+                <!-- Injected via app.js -->
+            </div>
+        </section>
+
+        <!-- Comparison Floating Dock -->
+        <div class="compare-dock hidden" id="compare-dock">
+            <div class="compare-dock-content">
+                <span class="dock-title">⚖️ Planet Comparison Dock:</span>
+                <div class="dock-chips" id="dock-chips"></div>
+                <button class="dock-action-btn" id="dock-launch-btn">Compare Now</button>
+                <button class="dock-clear-btn" id="dock-clear-btn">&times;</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Detail Telemetry Modal -->
+    <div class="modal-backdrop hidden" id="planet-modal">
+        <div class="modal-card">
+            <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+            
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div class="modal-backdrop hidden" id="comparison-modal">
+        <div class="modal-card compare-modal-card">
+            <button class="modal-close-btn" id="comparison-close-btn">&times;</button>
+            <div class="compare-modal-header">
+                <h2>Planetary Face-Off Comparison</h2>
+                <p>Select two celestial bodies to analyze their physical properties side-by-side</p>
+                
+                <div class="compare-selectors">
+                    <select id="compare-select-1" class="compare-select"></select>
+                    <span class="vs-badge">VS</span>
+                    <select id="compare-select-2" class="compare-select"></select>
+                </div>
+            </div>
+
+            <div class="compare-table-wrapper" id="compare-table-container">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Node.js Server Telemetry Modal -->
+    <div class="modal-backdrop hidden" id="server-modal">
+        <div class="modal-card server-modal-card">
+            <button class="modal-close-btn" id="server-close-btn">&times;</button>
+            <div class="server-modal-header">
+                <span class="server-icon">⚡</span>
+                <h2>Node.js Server Architecture</h2>
+                <p>Live runtime metrics served directly from our backend environment</p>
+            </div>
+            
+            <div class="server-telemetry-grid" id="server-telemetry-content">
+                <p>Querying <code>/api/server-info</code>...</p>
+            </div>
+
+            <div class="assignment-banner">
+                <h3>FSD Practical Assignment 4 Completed</h3>
+                <p>• <strong>Core Requirement:</strong> Node.js application serving a static website via Express static middleware.</p>
+                <p>• <strong>Extensions:</strong> Dynamic REST API endpoints, full offline local asset caching, interactive Web Audio synthesizer, and responsive CSS glassmorphic design.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <p class="footer-logo">🪐 COSMIC EXPLORER</p>
+                <p class="footer-desc">Full Stack Development (FSD) — Assignment 4: Node.js Static Server</p>
+            </div>
+            <div class="footer-center">
+                <span class="tech-pill">Node.js</span>
+                <span class="tech-pill">Express Static</span>
+                <span class="tech-pill">REST API</span>
+                <span class="tech-pill">NASA Data</span>
+                <span class="tech-pill">Vanilla CSS</span>
+            </div>
+            <div class="footer-right">
+                <p>&copy; 2026 Cosmic Explorer. All planetary assets stored locally in <code>public/images/</code>.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Logic -->
+    <script src="js/app.js"></script>
+</body>
+</html>
